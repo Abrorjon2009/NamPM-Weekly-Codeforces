@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NamPM Competitive Programming</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>📊 NamPM Competitive Programming</h1>
+    <div class="controls">
+        <form id="add-form">
+            <input type="text" id="handle-input" placeholder="Enter Handle" required>
+            <select id="division-select">
+                <option value="division1">Division 1</option>
+                <option value="division2">Division 2</option>
+            </select>
+            <button type="submit">➕ Add Handle</button>
+        </form>
+        <button id="update-button">🔄 Update Stats</button>
+    </div>
+    <div class="container">
+        <div>
+            <h2>🥇 Division 1</h2>
+            <table id="div1-table">
+                <thead><tr><th>Handle</th><th>Solved</th></tr></thead>
+                <tbody id="div1-body">
+                    <tr><td colspan="2">No data</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <h2>🥈 Division 2</h2>
+            <table id="div2-table">
+                <thead><tr><th>Handle</th><th>Solved</th></tr></thead>
+                <tbody id="div2-body">
+                    <tr><td colspan="2">No data</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
