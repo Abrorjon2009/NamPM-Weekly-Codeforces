@@ -13,7 +13,7 @@ function getLast7DaysTimestamp() {
 
 async function fetchSubmissions(handle) {
     const url = `https://codeforces.com/api/user.status?handle=${handle}`;
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 10; i++) {
         try {
             const response = await fetch(url);
             const data = await response.json();
