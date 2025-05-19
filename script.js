@@ -1,78 +1,68 @@
-// Return timestamp of exactly 7 days ago
-function sevenDaysAgoTs() {
-  return Math.floor(Date.now()/1000) - 7*24*3600;
+const usernames = [
+    // ... your handles here ...
+];
+
+function calculatePoints(rating) {
+    return Math.round(Math.pow((rating - 800) / 100.0, 1.5));
 }
 
-// Build a cache‑busting URL for CF API calls
-function makeApiUrl(handle) {
-  return `https://codeforces.com/api/user.status?handle=${handle}&from=1&count=10000&_=${Date.now()}`;
+function getLast7DaysTimestamp() {
+    const now = new Date();
+    return now.getTime() / 1000 - 7 * 24 * 60 * 60;
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const btn   = document.getElementById("update-button");
-  const spin  = document.getElementById("spinner");
-  const  cont = document.getElementById("division-container");
-
-  btn.addEventListener("click", fetchData);
-  fetchData();
-
-  async function fetchData() {
-    spin.classList.remove("hidden");
-    cont.innerHTML = "";
-    const sinceTs = sevenDaysAgoTs();
-
-    try {
-      const res = await fetch("./handles.json");
-      const divs = await res.json();
-
-      for (const [name, handles] of Object.entries(divs)) {
-        const box = document.createElement("div");
-        box.className = "division";
-        box.innerHTML = `<h2>${name}</h2>`;
-
-        // fetch stats with retry
-        const stats = await Promise.all(handles.map(h => retryFetch(h, sinceTs)));
-        stats.sort((a,b) => b.points - a.points);
-
-        stats.forEach(({handle, count, points}) => {
-          const el = document.createElement("div");
-          el.className = "user";
-          el.innerHTML = `<strong>${handle}</strong> ➜ ${points} 🏅 (${count} solved)`;
-          box.appendChild(el);
-        });
-
-        cont.appendChild(box);
-      }
-
-    } catch (e) {
-      console.error(e);
-      cont.innerHTML = "<p style='color:red;'>Error loading data</p>";
-    } finally {
-      spin.classList.add("hidden");
-    }
-  }
-
-  async function retryFetch(handle, sinceTs, tries=2) {
-    try {
-      const r    = await fetch(makeApiUrl(handle));
-      const data = await r.json();
-      const seen = new Set();
-      let pts    = 0;
-      data.result.forEach(s => {
-        if (s.verdict==="OK" && s.creationTimeSeconds>=sinceTs && s.problem.rating) {
-          const id = `${s.problem.contestId}-${s.problem.index}`;
-          if (!seen.has(id)) {
-            seen.add(id);
-            // new formula: (rating-800)/100 ^1.5
-            const x = (s.problem.rating - 800)/100;
-            pts += Math.round(Math.pow(x, 1.5));
-          }
+async function fetchSubmissions(handle) {
+    const url = `https://codeforces.com/api/user.status?handle=${handle}`;
+    for (let i = 0; i < 3; i++) {
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data.status === "OK") return data.result;
+        } catch (e) {
+            await new Promise(r => setTimeout(r, 500));
         }
-      });
-      return { handle, count: seen.size, points: pts };
-    } catch (e) {
-      if (tries>0) return retryFetch(handle, sinceTs, tries-1);
-      return { handle, count: 0, points: 0 };
     }
-  }
-});
+    return null;
+}
+
+async function loadUserData(handle) {
+    const submissions = await fetchSubmissions(handle);
+    if (!submissions) return null;
+
+    const solvedSet = new Set();
+    const last7Days = getLast7DaysTimestamp();
+
+    for (const sub of submissions) {
+        if (sub.verdict === "OK" && sub.creationTimeSeconds >= last7Days) {
+            solvedSet.add(sub.problem.contestId + '-' + sub.problem.index);
+        }
+    }
+
+    const userInfoRes = await fetch(`https://codeforces.com/api/user.info?handles=${handle}`);
+    const userInfoData = await userInfoRes.json();
+    const rating = userInfoData.status === "OK" ? userInfoData.result[0].rating || 800 : 800;
+
+    const points = solvedSet.size * calculatePoints(rating);
+
+    return {
+        handle,
+        solved: solvedSet.size,
+        points
+    };
+}
+
+async function main() {
+    const usersData = await Promise.all(usernames.map(loadUserData));
+
+    usersData.sort((a, b) => (b?.points || 0) - (a?.points || 0));
+
+    const container = document.getElementById("standings");
+    usersData.forEach(user => {
+        if (!user) return;
+        const div = document.createElement("div");
+        div.textContent = `${user.handle} → ${user.points} 🏅 (${user.solved} solved)`;
+        container.appendChild(div);
+    });
+}
+
+main();
