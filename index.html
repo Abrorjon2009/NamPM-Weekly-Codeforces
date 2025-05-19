@@ -2,22 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>NamPM Competitive Programming 🧠🏆</title>
-  <!-- Make sure style.css lives alongside index.html -->
-  <link rel="stylesheet" href="./style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NamPM Competitive Programming</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>NamPM Competitive Programming 🧠🏆</h1>
-    <button id="update-button" class="update-btn">🔄 Refresh</button>
-    <div id="spinner" class="spinner hidden"></div>
-    <div id="division-container" class="division-container"></div>
-    <div class="footer">
-      <h3>📘 Point Distribution</h3>
-      <p><code>points = round(((rating - 800)/100)**1.5)</code></p>
+  <h1>NamPM Competitive Programming</h1>
+  <div id="loading">🔄 Loading data...</div>
+  <div class="tables">
+    <div>
+      <h2>Division 1</h2>
+      <table id="div1">
+        <thead>
+          <tr><th>Handle</th><th>Solved</th><th>Points</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div>
+      <h2>Division 2</h2>
+      <table id="div2">
+        <thead>
+          <tr><th>Handle</th><th>Solved</th><th>Points</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
   </div>
-  <script src="./script.js" defer></script>
+  <footer>
+    <p>📊 Point distribution: (rating − 800) ^ 1.5 / 100</p>
+  </footer>
+  <script src="script.js"></script>
 </body>
 </html>
